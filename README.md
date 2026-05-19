@@ -31,14 +31,13 @@ El sistema incluye lo siguiente:
 ---
 
 **Consideraciones técnicas**
-• Proyecto individual.
-• Lenguaje de programación a elección del estudiante.
-• El proyecto debe ser Web o Desktop, no se permite modo consola.
-• Uso obligatorio y explícito de system tables para obtener metadata.
-• No se permite el uso de frameworks/librerías tipo SQLAlchemy, Dapper, Entity
-Framework, Hibernate, etc.
-• No se permite el esquema estandarizado information_schema.
-• Documentar cualquier limitación o diferencia en el SGBD.
+- Proyecto individual.
+- Lenguaje de programación a elección del estudiante.
+- El proyecto debe ser Web o Desktop, no se permite modo consola.
+- Uso obligatorio y explícito de system tables para obtener metadata.
+- No se permite el uso de frameworks/librerías tipo SQLAlchemy, Dapper, Entity Framework, Hibernate, etc.
+- No se permite el esquema estandarizado information_schema.
+- Documentar cualquier limitación o diferencia en el SGBD.
 
 ---
 
