@@ -398,11 +398,7 @@ namespace Database_Manager_TBD2
 
                 Database = txtOriginalDatabase.Text,
 
-                WithWindowsAuth =
-                    rbWindowsAuth.Checked,
-
-                WithSqlAuth =
-                    rbSqlAuth.Checked,
+                UseWindowsAuth = rbWindowsAuth.Checked,
 
                 Username = txtUsername.Text,
 
@@ -440,7 +436,7 @@ namespace Database_Manager_TBD2
                     return;
 
                 // Open pgAdmin-style window
-                TableView dashboard = new TableView();
+                Main dashboard = new Main(con);
 
                 dashboard.Show();
                 this.Hide();
@@ -478,9 +474,8 @@ namespace Database_Manager_TBD2
                 Name = txtName.Text,
                 Server = txtServer.Text,
                 Database = txtOriginalDatabase.Text,
-
-                WithWindowsAuth = rbWindowsAuth.Checked,
-                WithSqlAuth = rbSqlAuth.Checked,
+                
+                UseWindowsAuth = rbWindowsAuth.Checked,
 
                 Username = txtUsername.Text,
                 Password = txtPassword.Text
@@ -546,34 +541,20 @@ namespace Database_Manager_TBD2
             }
         }
 
-        private void LstConnections_SelectedIndexChanged(
-            object sender,
-            EventArgs e)
+        private void LstConnections_SelectedIndexChanged(object sender,EventArgs e)
         {
-            if (lstConnections.SelectedItem
-                is not Conexion con)
-            {
+            if (lstConnections.SelectedItem is not Conexion con)
                 return;
-            }
 
             txtName.Text = con.Name;
-
             txtServer.Text = con.Server;
+            txtOriginalDatabase.Text = con.Database;
 
-            txtOriginalDatabase.Text =
-                con.Database;
+            rbWindowsAuth.Checked = con.UseWindowsAuth;
+            rbSqlAuth.Checked = !con.UseWindowsAuth;
 
-            rbWindowsAuth.Checked =
-                con.WithWindowsAuth;
-
-            rbSqlAuth.Checked =
-                con.WithSqlAuth;
-
-            txtUsername.Text =
-                con.Username;
-
-            txtPassword.Text =
-                con.Password;
+            txtUsername.Text = con.Username;
+            txtPassword.Text = con.Password;
         }
     }
 }
