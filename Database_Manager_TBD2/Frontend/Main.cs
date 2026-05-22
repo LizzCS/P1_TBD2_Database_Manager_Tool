@@ -20,6 +20,7 @@ namespace Database_Manager_TBD2
 
         private Button btnExecute;
         private Button btnNewQuery;
+        private Button btnRefresh;
 
         private Conexion con;
         private Backend.TableView.Metadata metadata;
@@ -52,7 +53,7 @@ namespace Database_Manager_TBD2
             mainSplit = new SplitContainer()
             {
                 Dock = DockStyle.Fill,
-                SplitterDistance = 350
+                SplitterDistance = 10
             };
 
             mainSplit.Panel1.BackColor = Color.FromArgb(28, 28, 28);
@@ -120,9 +121,22 @@ namespace Database_Manager_TBD2
             btnExecute.FlatAppearance.BorderSize = 0;
             btnExecute.Click += BtnExecute_Click;
 
+            btnRefresh = new Button()
+            {
+                Text = "Refresh",
+                Width = 120,
+                Height = 32,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(70, 70, 70),
+                ForeColor = Color.White
+            };
+
+            btnRefresh.FlatAppearance.BorderSize = 0;
+            btnRefresh.Click += (s, e) => RefreshTree();
+
             buttonBar.Controls.Add(btnNewQuery);
             buttonBar.Controls.Add(btnExecute);
-
+            buttonBar.Controls.Add(btnRefresh);
             // EDITOR
             txtQueryEditor = new RichTextBox()
             {
@@ -342,7 +356,24 @@ namespace Database_Manager_TBD2
                 MessageBox.Show(ex.Message);
             }
         }
+        private void RefreshTree()
+        {
+            try
+            {
+                // optional UI feedback
+                Cursor = Cursors.WaitCursor;
 
+                metadata = new Backend.TableView.Metadata(con); // reload schema metadata
+                LoadTree();
+
+                Cursor = Cursors.Default;
+            }
+            catch (Exception ex)
+            {
+                Cursor = Cursors.Default;
+                MessageBox.Show(ex.Message);
+            }
+        }
         private void ShowDDL()
         {
             if (selectedTableNode?.Tag is not Tuple<string, string> t)
