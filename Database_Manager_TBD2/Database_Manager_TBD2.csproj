@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <Folder Include="Backend\SQLQuery\" />
-    <Folder Include="Backend\TableView\" />
   </ItemGroup>
 
   <ItemGroup>

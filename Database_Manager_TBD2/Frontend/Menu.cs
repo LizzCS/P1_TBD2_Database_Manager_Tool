@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Database_Manager_TBD2.Backend;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Windows.Forms;
 using System.Threading.Tasks;
-using Database_Manager_TBD2.Backend;
+using System.Windows.Forms;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Database_Manager_TBD2
 {
@@ -367,18 +368,35 @@ namespace Database_Manager_TBD2
             txtPassword.Visible = sqlAuth;
         }
 
-        private void BtnSave_Click(
-            object sender,
-            EventArgs e)
+        private void BtnSave_Click(object sender, EventArgs e)
         {
+
+            if (string.IsNullOrWhiteSpace(txtName.Text) ||
+                string.IsNullOrWhiteSpace(txtServer.Text) ||
+                string.IsNullOrWhiteSpace(txtOriginalDatabase.Text))
+            {
+                SetErrorState();
+                MessageBox.Show("Name, Server, and Database are required.");
+                return;
+            }
+
+            // Validate SQL Authentication fields
+            if (rbSqlAuth.Checked &&
+                (string.IsNullOrWhiteSpace(txtUsername.Text) ||
+                 string.IsNullOrWhiteSpace(txtPassword.Text)))
+            {
+                SetErrorState();
+                MessageBox.Show("Username and Password are required for SQL Authentication.");
+                return;
+            }
+
             Conexion con = new Conexion()
             {
                 Name = txtName.Text,
 
                 Server = txtServer.Text,
 
-                Database =
-                    txtOriginalDatabase.Text,
+                Database = txtOriginalDatabase.Text,
 
                 WithWindowsAuth =
                     rbWindowsAuth.Checked,
@@ -397,86 +415,93 @@ namespace Database_Manager_TBD2
 
             RefreshList();
 
-            MessageBox.Show(
-                "Conexión guardada.");
+            MessageBox.Show("Conexión guardada.");
         }
 
-        private async void BtnTest_Click(
-            object sender,
-            EventArgs e)
-        {
-            SetTestingState();
-
-            Conexion con = BuildConnection();
-
-            string error = null;
-
-            bool ok = await Task.Run(() =>
-            {
-                try
-                {
-                    con.TestConnection();
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    error = ex.Message;
-                    return false;
-                }
-            });
-
-            if (ok)
-            {
-                SetSuccessState();
-                MessageBox.Show("Conexión exitosa.");
-            }
-            else
-            {
-                SetErrorState();
-                MessageBox.Show(error);
-            }
-        }
-
-        private void BtnConnect_Click(
-            object sender,
-            EventArgs e)
+        private async void BtnTest_Click(object sender, EventArgs e)
         {
             try
             {
                 Conexion con = BuildConnection();
 
-                con.TestConnection();
-
-                MessageBox.Show(
-                    "Conectado correctamente.");
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
+        private void BtnConnect_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Conexion con = BuildConnection();
 
+                if (con == null)
+                    return;
+
+                // Open pgAdmin-style window
+                TableView dashboard = new TableView();
+
+                dashboard.Show();
+                this.Hide();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
         private Conexion BuildConnection()
         {
-            return new Conexion()
+            SetTestingState();
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(txtName.Text) ||
+                string.IsNullOrWhiteSpace(txtServer.Text) ||
+                string.IsNullOrWhiteSpace(txtOriginalDatabase.Text))
+            {
+                SetErrorState();
+                MessageBox.Show("Name, Server, and Database are required.");
+                return null;
+            }
+
+            // Validate SQL Authentication fields
+            if (rbSqlAuth.Checked &&
+                (string.IsNullOrWhiteSpace(txtUsername.Text) ||
+                 string.IsNullOrWhiteSpace(txtPassword.Text)))
+            {
+                SetErrorState();
+                MessageBox.Show("Username and Password are required for SQL Authentication.");
+                return null;
+            }
+
+            Conexion con = new Conexion()
             {
                 Name = txtName.Text,
-
                 Server = txtServer.Text,
+                Database = txtOriginalDatabase.Text,
 
-                Database =
-                    txtOriginalDatabase.Text,
-
-                WithWindowsAuth =
-                    rbWindowsAuth.Checked,
-
-                WithSqlAuth =
-                    rbSqlAuth.Checked,
+                WithWindowsAuth = rbWindowsAuth.Checked,
+                WithSqlAuth = rbSqlAuth.Checked,
 
                 Username = txtUsername.Text,
-
                 Password = txtPassword.Text
             };
+
+            try
+            {
+                con.TestConnection();
+
+                SetSuccessState();
+                MessageBox.Show("Conexión exitosa.");
+
+                return con;
+            }
+            catch (Exception ex)
+            {
+                SetErrorState();
+                MessageBox.Show(ex.Message);
+
+                return null;
+            }
         }
 
         private void SetTestingState()

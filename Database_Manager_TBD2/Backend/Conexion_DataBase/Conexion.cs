@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace Database_Manager_TBD2.Backend
 {
@@ -10,9 +11,9 @@ namespace Database_Manager_TBD2.Backend
 
         public string Database { get; set; } = "";
 
-        public bool WithWindowsAuth { get; set; }
-
-        public bool WithSqlAuth { get; set; }
+        // true = Windows Authentication
+        // false = SQL Authentication
+        public bool UseWindowsAuth { get; set; }
 
         public string Username { get; set; } = "";
 
@@ -25,7 +26,7 @@ namespace Database_Manager_TBD2.Backend
 
         public string BuildConnectionString()
         {
-            if (WithWindowsAuth)
+            if (UseWindowsAuth)
             {
                 return
                     $"Server={Server};" +
@@ -44,11 +45,64 @@ namespace Database_Manager_TBD2.Backend
 
         public void TestConnection()
         {
-            if (string.IsNullOrWhiteSpace(BuildConnectionString()))
+            string connectionString = BuildConnectionString();
+
+            if (string.IsNullOrWhiteSpace(connectionString))
                 throw new InvalidOperationException("No hay ConnectionString configurada.");
 
-            using var cn = new SqlConnection(BuildConnectionString());
+            using var cn = new SqlConnection(connectionString);
+
             cn.Open();
+        }
+
+        // SELECT queries
+        public DataTable ExecuteSelect(
+            string sql,
+            Dictionary<string, object>? parameters = null)
+        {
+            using var cn = new SqlConnection(BuildConnectionString());
+
+            using var cmd = new SqlCommand(sql, cn);
+
+            // Add parameters safely
+            if (parameters != null)
+            {
+                foreach (var param in parameters)
+                {
+                    cmd.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
+                }
+            }
+
+            using var da = new SqlDataAdapter(cmd);
+
+            var dt = new DataTable();
+
+            cn.Open();
+
+            da.Fill(dt);
+
+            return dt;
+        }
+
+        // INSERT, UPDATE, DELETE
+        public int ExecuteNonQuery(string sql, Dictionary<string, object>? parameters = null)
+        {
+            using var cn = new SqlConnection(BuildConnectionString());
+
+            using var cmd = new SqlCommand(sql, cn);
+
+            // Add parameters safely
+            if (parameters != null)
+            {
+                foreach (var param in parameters)
+                {
+                    cmd.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
+                }
+            }
+
+            cn.Open();
+
+            return cmd.ExecuteNonQuery();
         }
     }
 }
