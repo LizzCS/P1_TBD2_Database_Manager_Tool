@@ -50,7 +50,7 @@ El sistema incluye lo siguiente:
 ## DATOS DE PRUEBA
 Para la prueba se utilizo :
 `Server: localhost`
-`Base de datos: sistema_bancario`
+\n`Base de datos: sistema_bancario`
 
 
 ---
