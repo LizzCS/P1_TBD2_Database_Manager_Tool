@@ -11,8 +11,6 @@ namespace Database_Manager_TBD2.Backend
 
         public string Database { get; set; } = "";
 
-        // true = Windows Authentication
-        // false = SQL Authentication
         public bool UseWindowsAuth { get; set; }
 
         public string Username { get; set; } = "";
@@ -62,7 +60,6 @@ namespace Database_Manager_TBD2.Backend
 
             using var cmd = new SqlCommand(sql, cn);
 
-            // Add parameters safely
             if (parameters != null)
             {
                 foreach (var param in parameters)
@@ -89,7 +86,6 @@ namespace Database_Manager_TBD2.Backend
 
             using var cmd = new SqlCommand(sql, cn);
 
-            // Add parameters safely
             if (parameters != null)
             {
                 foreach (var param in parameters)

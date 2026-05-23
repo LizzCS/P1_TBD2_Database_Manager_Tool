@@ -128,10 +128,14 @@ namespace Database_Manager_TBD2.Backend.TableView
                     c.is_identity AS IsIdentity,
                     ISNULL(dc.definition, '') AS DefaultValue
                 FROM sys.columns c
-                INNER JOIN sys.objects o ON c.object_id = o.object_id
-                INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
-                INNER JOIN sys.types ty ON c.user_type_id = ty.user_type_id
-                LEFT JOIN sys.default_constraints dc ON c.default_object_id = dc.object_id
+                INNER JOIN sys.objects o 
+                    ON c.object_id = o.object_id
+                INNER JOIN sys.schemas s 
+                    ON o.schema_id = s.schema_id
+                INNER JOIN sys.types ty 
+                    ON c.user_type_id = ty.user_type_id
+                LEFT JOIN sys.default_constraints dc 
+                    ON c.default_object_id = dc.object_id
                 WHERE s.name = @Schema
                   AND o.name = @Table
                   AND o.type = 'U'
