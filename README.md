@@ -20,6 +20,17 @@ El sistema de **Database Manager Tool** ayuda a manejar las bases de datos como 
 Desarrollar una herramienta administrativa para bases de datos, interactuando directamente con las tablas de sistema (system tables) del SGBD asignado. 
 
 ---
+## Soporte para objetos de base de datos
+• Tablas Vistas
+• Procedimientos almacenados
+• Funciones
+• Secuencias/Generadores
+• Disparadores (Triggers)
+• Índices
+• Usuarios
+
+// MS SQL SERVER no tiene soporte para la metadata de Tablespaces y Paquetes.
+---
 
 ## Alcance del Sistema
 El sistema incluye lo siguiente:
@@ -49,8 +60,20 @@ El sistema incluye lo siguiente:
 
 ## DATOS DE PRUEBA
 Para la prueba se utilizo :
-`Server: localhost`
-\n`Base de datos: sistema_bancario`
-
+- Server: localhost
+- Base de datos: sistema_bancario
 
 ---
+
+## REFLEXION SOBRE EL PROCESO DEL PROYECTO
+El desarollo del proyecto fue util para mejor entender el proposito del system tables, especialmente en mi caso el de MS SQL SERVER. También fue utili para entender el formato de los DDL y como manejan los adminsitradores de RDBMS esta información para la base de datos.
+
+---
+
+## Desafios enfentrados y Soluciones
+El desafío que encontre fu la complejidad de desarolla los DDL mayormente una forma de desarollarlos sin estar repitiendo codigo, al igual que entender las relaciones entre las tablas del sys. 
+
+---
+
+## Aprendizaje Clave
+EL aprendizaje clave fue entender el manejo de la system tables para proyectar la metadata de los RDBMS. También desarollar mejor conocimiento sobre las estructuras de las Administradores de RDBMS.
