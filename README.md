@@ -21,13 +21,13 @@ Desarrollar una herramienta administrativa para bases de datos, interactuando di
 
 ---
 ## Soporte para objetos de base de datos
-• Tablas Vistas
-• Procedimientos almacenados
-• Funciones
-• Secuencias/Generadores
-• Disparadores (Triggers)
-• Índices
-• Usuarios
+- Tablas Vistas
+- Procedimientos almacenados
+- Funciones
+- Secuencias/Generadores
+- Disparadores (Triggers)
+- Índices
+- Usuarios
 
 // MS SQL SERVER no tiene soporte para la metadata de Tablespaces y Paquetes.
 ---
