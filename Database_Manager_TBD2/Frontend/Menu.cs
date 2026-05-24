@@ -353,6 +353,8 @@ namespace Database_Manager_TBD2
 
             this.Controls.Add(rightPanel);
             this.Controls.Add(leftPanel);
+
+            this.FormClosing += Main_FormClosing;
         }
 
         private void AuthChanged(
@@ -555,6 +557,11 @@ namespace Database_Manager_TBD2
 
             txtUsername.Text = con.Username;
             txtPassword.Text = con.Password;
+        }
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Application.Exit();
         }
     }
 }

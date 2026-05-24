@@ -77,6 +77,67 @@ namespace Database_Manager_TBD2.Backend.TableView
             }
         }
 
+        public string GetSequenceDDL(string schema, string sequenceName)
+        {
+            try
+            {
+                var sb = CreateHeader("SEQUENCE", schema, sequenceName);
+
+                string sql = $@"
+        SELECT
+            seq.name AS SequenceName,
+            t.name AS DataType,
+            seq.start_value,
+            seq.increment,
+            seq.minimum_value,
+            seq.maximum_value,
+            seq.is_cycling,
+            seq.cache_size
+        FROM sys.sequences seq
+        INNER JOIN sys.types t
+            ON seq.user_type_id = t.user_type_id
+        INNER JOIN sys.schemas s
+            ON seq.schema_id = s.schema_id
+        WHERE s.name = '{EscapeSql(schema)}'
+          AND seq.name = '{EscapeSql(sequenceName)}'";
+
+                var row = QuerySingle(sql);
+
+                if (row == null)
+                {
+                    sb.AppendLine("-- Sequence not found");
+                    sb.AppendLine("GO");
+                    return sb.ToString();
+                }
+
+                sb.AppendLine($"CREATE SEQUENCE [{schema}].[{sequenceName}]");
+                sb.AppendLine($"AS {row["DataType"]}");
+                sb.AppendLine($"START WITH {row["start_value"]}");
+                sb.AppendLine($"INCREMENT BY {row["increment"]}");
+                sb.AppendLine($"MINVALUE {row["minimum_value"]}");
+                sb.AppendLine($"MAXVALUE {row["maximum_value"]}");
+
+                if (Convert.ToBoolean(row["is_cycling"]))
+                    sb.AppendLine("CYCLE");
+                else
+                    sb.AppendLine("NO CYCLE");
+
+                if (row["cache_size"] != DBNull.Value)
+                    sb.AppendLine($"CACHE {row["cache_size"]}");
+                else
+                    sb.AppendLine("NO CACHE");
+
+                sb.AppendLine(";");
+                sb.AppendLine("GO");
+
+                return sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                return FormatError("SEQUENCE", ex);
+            }
+        }
+
         public string GetIndexDDL(string schema, string tableName, string indexName)
         {
             try

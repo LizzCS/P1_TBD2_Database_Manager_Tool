@@ -1,5 +1,4 @@
 ﻿using Database_Manager_TBD2.Backend;
-using Database_Manager_TBD2.Backend;
 using System;
 using System.Data;
 using System.Drawing;
@@ -16,6 +15,7 @@ namespace Database_Manager_TBD2
         private ContextMenuStrip tableMenu;
         private ContextMenuStrip objectMenu;
         private ContextMenuStrip indexMenu;
+        private ContextMenuStrip categoryMenu;  
 
         private TreeView treeDatabase;
         private RichTextBox txtQueryEditor;
@@ -32,14 +32,6 @@ namespace Database_Manager_TBD2
         private Backend.TableView.DDL ddl;
 
         private TreeNode selectedTableNode;
-
-        // Tag types
-        // Tables:   Tuple<string, string, string>  ("TABLE",   schema, name)
-        // Views:    Tuple<string, string, string>  ("VIEW",    schema, name)
-        // Procs:    Tuple<string, string, string>  ("PROC",    schema, name)
-        // Funcs:    Tuple<string, string, string>  ("FUNC",    schema, name)
-        // Triggers: Tuple<string, string, string>  ("TRIGGER", schema, name)
-        // Indexes:  Tuple<string, string, string, string> ("INDEX", schema, table, indexName)
 
         public Main(Conexion connection)
         {
@@ -65,7 +57,7 @@ namespace Database_Manager_TBD2
             mainSplit = new SplitContainer()
             {
                 Dock = DockStyle.Fill,
-                SplitterDistance = 300
+                SplitterDistance = 5
             };
 
             mainSplit.Panel1.BackColor = Color.FromArgb(28, 28, 28);
@@ -211,9 +203,6 @@ namespace Database_Manager_TBD2
 
             Controls.Add(mainSplit);
 
-            // ── CONTEXT MENUS ────────────────────────────────────────────
-
-            // Database root menu
             dbMenu = new ContextMenuStrip();
             dbMenu.Items.Add("New Query", null, (s, e) =>
             {
@@ -222,24 +211,60 @@ namespace Database_Manager_TBD2
             });
             dbMenu.Items.Add("Refresh", null, (s, e) => RefreshTree());
 
-            // Table menu
             tableMenu = new ContextMenuStrip();
             tableMenu.Items.Add("View Table", null, (s, e) => OpenTableData());
             tableMenu.Items.Add("View DDL", null, (s, e) => ShowDDL());
             tableMenu.Items.Add("View Structure", null, (s, e) => ShowStructure());
 
-            // Generic object menu (views, procs, funcs, triggers)
             objectMenu = new ContextMenuStrip();
             objectMenu.Items.Add("View DDL", null, (s, e) => ShowDDL());
 
-            // Index menu
             indexMenu = new ContextMenuStrip();
             indexMenu.Items.Add("View DDL", null, (s, e) => ShowDDL());
+            
+            dbMenu.Items.Add(new ToolStripSeparator());
+
+            dbMenu.Items.Add("New Table...", null, (s, e) =>
+            {
+                using (var designer = new CreateTable(con))
+                {
+                    if (designer.ShowDialog() == DialogResult.OK)
+                        RefreshTree();
+                }
+            });
+
+            dbMenu.Items.Add("New View...", null, (s, e) =>
+            {
+                using (var designer = new CreateView(con))
+                {
+                    if (designer.ShowDialog() == DialogResult.OK)
+                        RefreshTree();
+                }
+            });
+
+            categoryMenu = new ContextMenuStrip();
+
+            categoryMenu.Items.Add("New Table...", null, (s, e) =>
+            {
+                using (var designer = new CreateTable(con))
+                {
+                    if (designer.ShowDialog() == DialogResult.OK)
+                        RefreshTree();
+                }
+            });
+
+            categoryMenu.Items.Add("New View...", null, (s, e) =>
+            {
+                using (var designer = new CreateView(con))
+                {
+                    if (designer.ShowDialog() == DialogResult.OK)
+                        RefreshTree();
+                }
+            });
+
+            this.FormClosing += Main_FormClosing;
         }
 
-        // =========================================================
-        // TREE LOAD
-        // =========================================================
         private void LoadTree()
         {
             treeDatabase.Nodes.Clear();
@@ -250,8 +275,7 @@ namespace Database_Manager_TBD2
             TreeNode EmptyNode(string text = "(vacio)") =>
                 new TreeNode(text) { ForeColor = Color.Gray };
 
-            // ── TABLES ───────────────────────────────────────────────────
-            TreeNode tablesNode = new TreeNode("Tables");
+            TreeNode tablesNode = new TreeNode("Tables") { Tag = "CATEGORY_TABLES" };
             root.Nodes.Add(tablesNode);
 
             DataTable tables = metadata.GetTables();
@@ -285,8 +309,7 @@ namespace Database_Manager_TBD2
                 }
             }
 
-            // ── VIEWS ────────────────────────────────────────────────────
-            TreeNode viewsNode = new TreeNode("Views");
+            TreeNode viewsNode = new TreeNode("Views") { Tag = "CATEGORY_VIEWS" };
             root.Nodes.Add(viewsNode);
 
             DataTable views = metadata.GetViews();
@@ -308,7 +331,6 @@ namespace Database_Manager_TBD2
                 }
             }
 
-            // ── PROCEDURES ───────────────────────────────────────────────
             TreeNode procNode = new TreeNode("Procedures");
             root.Nodes.Add(procNode);
 
@@ -331,7 +353,6 @@ namespace Database_Manager_TBD2
                 }
             }
 
-            // ── FUNCTIONS ────────────────────────────────────────────────
             TreeNode funcNode = new TreeNode("Functions");
             root.Nodes.Add(funcNode);
 
@@ -354,7 +375,6 @@ namespace Database_Manager_TBD2
                 }
             }
 
-            // ── TRIGGERS ─────────────────────────────────────────────────
             TreeNode trigNode = new TreeNode("Triggers");
             root.Nodes.Add(trigNode);
 
@@ -377,7 +397,6 @@ namespace Database_Manager_TBD2
                 }
             }
 
-            // ── INDEXES ──────────────────────────────────────────────────
             TreeNode indexNode = new TreeNode("Indexes");
             root.Nodes.Add(indexNode);
 
@@ -401,6 +420,33 @@ namespace Database_Manager_TBD2
                 }
             }
 
+            TreeNode seqNode = new TreeNode("Sequences");
+            root.Nodes.Add(seqNode);
+
+            DataTable seqs = metadata.GetSequences();
+
+            if (seqs.Rows.Count == 0)
+            {
+                seqNode.Nodes.Add(EmptyNode());
+            }
+            else
+            {
+                foreach (DataRow r in seqs.Rows)
+                {
+                    string schema = r["SchemaName"].ToString();
+                    string name = r["SequenceName"].ToString();
+
+                    TreeNode node = new TreeNode($"{schema}.{name}");
+
+                    node.Tag = new Tuple<string, string, string>(
+                        "SEQUENCE",
+                        schema,
+                        name);
+
+                    seqNode.Nodes.Add(node);
+                }
+            }
+
             // ── USERS ────────────────────────────────────────────────────
             TreeNode userNode = new TreeNode("Users");
             root.Nodes.Add(userNode);
@@ -420,9 +466,7 @@ namespace Database_Manager_TBD2
             root.Expand();
         }
 
-        // =========================================================
-        // TREE EVENTS
-        // =========================================================
+
         private void TreeDatabase_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             selectedTableNode = e.Node;
@@ -436,17 +480,32 @@ namespace Database_Manager_TBD2
 
             switch (e.Node.Tag)
             {
+                case "CATEGORY_TABLES":
+                    categoryMenu.Items[0].Visible = true;    
+                    categoryMenu.Items[1].Visible = false;
+                    treeDatabase.ContextMenuStrip = categoryMenu;
+                    break;
+
+                case "CATEGORY_VIEWS":
+                    categoryMenu.Items[0].Visible = false;  
+                    categoryMenu.Items[1].Visible = true;   
+                    treeDatabase.ContextMenuStrip = categoryMenu;
+                    break;
+
                 case Tuple<string, string, string> t when t.Item1 == "TABLE":
                     treeDatabase.ContextMenuStrip = tableMenu;
                     break;
 
                 case Tuple<string, string, string> t
-                    when t.Item1 == "VIEW" || t.Item1 == "PROC"
-                      || t.Item1 == "FUNC" || t.Item1 == "TRIGGER":
+                    when t.Item1 == "VIEW"
+                      || t.Item1 == "PROC"
+                      || t.Item1 == "FUNC"
+                      || t.Item1 == "TRIGGER"
+                      || t.Item1 == "SEQUENCE":
                     treeDatabase.ContextMenuStrip = objectMenu;
                     break;
 
-                case Tuple<string, string, string, string> _:
+                case Tuple<string, string, string, string>:
                     treeDatabase.ContextMenuStrip = indexMenu;
                     break;
 
@@ -456,15 +515,12 @@ namespace Database_Manager_TBD2
             }
         }
 
+
         private void TreeDatabase_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Node.Tag is Tuple<string, string, string> t && t.Item1 == "TABLE")
                 OpenTableData(t.Item2, t.Item3);
         }
-
-        // =========================================================
-        // ACTIONS
-        // =========================================================
 
         private void ShowStructure()
         {
@@ -558,7 +614,7 @@ namespace Database_Manager_TBD2
                         label = $"DDL: [{t.Item2}].[{t.Item3}]";
                         break;
 
-                    case Tuple<string, string, string, string> t: // INDEX
+                    case Tuple<string, string, string, string> t:
                         ddlText = ddl.GetIndexDDL(t.Item2, t.Item3, t.Item4);
                         label = $"DDL: [{t.Item2}].[{t.Item3}].[{t.Item4}]";
                         break;
@@ -586,6 +642,34 @@ namespace Database_Manager_TBD2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "Desconectarse de la base de datos y volver al menu principal?",
+                "Desconectar",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Cancel || result == DialogResult.No)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            try
+            {
+                this.Hide();
+                Menu menu = new Menu();
+                menu.Show();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                e.Cancel = true;
             }
         }
     }

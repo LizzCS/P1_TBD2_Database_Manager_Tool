@@ -13,8 +13,6 @@ namespace Database_Manager_TBD2.Backend.TableView
         {
             conex = connection;
         }
-
-        // ================= TABLES =================
         public DataTable GetTables()
         {
             return conex.ExecuteSelect(@"
@@ -28,7 +26,6 @@ namespace Database_Manager_TBD2.Backend.TableView
                 ORDER BY s.name, o.name;");
         }
 
-        // ================= VIEWS =================
         public DataTable GetViews()
         {
             return conex.ExecuteSelect(@"
@@ -36,13 +33,13 @@ namespace Database_Manager_TBD2.Backend.TableView
                     s.name AS SchemaName,
                     o.name AS ObjectName
                 FROM sys.objects o
-                INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
+                INNER JOIN sys.schemas s 
+                    ON o.schema_id = s.schema_id
                 WHERE o.type = 'V'
                   AND o.is_ms_shipped = 0
                 ORDER BY s.name, o.name;");
         }
 
-        // ================= PROCEDURES =================
         public DataTable GetProcedures()
         {
             return conex.ExecuteSelect(@"
@@ -50,13 +47,13 @@ namespace Database_Manager_TBD2.Backend.TableView
                     s.name AS SchemaName,
                     o.name AS ObjectName
                 FROM sys.objects o
-                INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
+                INNER JOIN sys.schemas s 
+                    ON o.schema_id = s.schema_id
                 WHERE o.type = 'P'
                   AND o.is_ms_shipped = 0
                 ORDER BY s.name, o.name;");
         }
 
-        // ================= FUNCTIONS =================
         public DataTable GetFunctions()
         {
             return conex.ExecuteSelect(@"
@@ -64,13 +61,13 @@ namespace Database_Manager_TBD2.Backend.TableView
                     s.name AS SchemaName,
                     o.name AS ObjectName
                 FROM sys.objects o
-                INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
+                INNER JOIN sys.schemas s 
+                    ON o.schema_id = s.schema_id
                 WHERE o.type IN ('FN','TF','IF')
                   AND o.is_ms_shipped = 0
                 ORDER BY s.name, o.name;");
         }
 
-        // ================= TRIGGERS =================
         public DataTable GetTriggers()
         {
             return conex.ExecuteSelect(@"
@@ -78,13 +75,14 @@ namespace Database_Manager_TBD2.Backend.TableView
                     s.name AS SchemaName,
                     o.name AS ObjectName
                 FROM sys.triggers t
-                INNER JOIN sys.objects o ON t.object_id = o.object_id
-                INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
+                INNER JOIN sys.objects o 
+                    ON t.object_id = o.object_id
+                INNER JOIN sys.schemas s 
+                    ON o.schema_id = s.schema_id
                 WHERE t.is_ms_shipped = 0
                 ORDER BY s.name, o.name;");
         }
 
-        // ================= INDEXES =================
         public DataTable GetIndexes()
         {
             return conex.ExecuteSelect(@"
@@ -93,14 +91,15 @@ namespace Database_Manager_TBD2.Backend.TableView
                     o.name AS TableName,
                     i.name AS IndexName
                 FROM sys.indexes i
-                INNER JOIN sys.objects o ON i.object_id = o.object_id
-                INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
+                INNER JOIN sys.objects o 
+                    ON i.object_id = o.object_id
+                INNER JOIN sys.schemas s 
+                    ON o.schema_id = s.schema_id
                 WHERE o.type = 'U'
                   AND i.name IS NOT NULL
                 ORDER BY s.name, o.name, i.name;");
         }
 
-        // ================= USERS =================
         public DataTable GetUsers()
         {
             return conex.ExecuteSelect(@"
@@ -113,7 +112,24 @@ namespace Database_Manager_TBD2.Backend.TableView
                 ORDER BY name;");
         }
 
-        // ================= COLUMNS =================
+        public DataTable GetSequences()
+        {
+            return conex.ExecuteSelect(@"
+            SELECT
+                s.name AS SchemaName,
+                seq.name AS SequenceName,
+                seq.start_value AS StartValue,
+                seq.increment AS IncrementValue,
+                seq.current_value AS CurrentValue,
+                seq.minimum_value AS MinimumValue,
+                seq.maximum_value AS MaximumValue,
+                seq.is_cycling AS IsCycling
+            FROM sys.sequences seq
+            INNER JOIN sys.schemas s
+                ON seq.schema_id = s.schema_id
+            ORDER BY s.name, seq.name;");
+        }
+
         public DataTable GetColumns(string schema, string table)
         {
             string sql = @"
