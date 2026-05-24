@@ -1,4 +1,5 @@
 ﻿using Database_Manager_TBD2.Backend;
+using Database_Manager_TBD2.Backend;
 using System;
 using System.Data;
 using System.Drawing;
@@ -13,6 +14,8 @@ namespace Database_Manager_TBD2
 
         private ContextMenuStrip dbMenu;
         private ContextMenuStrip tableMenu;
+        private ContextMenuStrip objectMenu;
+        private ContextMenuStrip indexMenu;
 
         private TreeView treeDatabase;
         private RichTextBox txtQueryEditor;
@@ -26,13 +29,23 @@ namespace Database_Manager_TBD2
 
         private Conexion con;
         private Backend.TableView.Metadata metadata;
+        private Backend.TableView.DDL ddl;
 
         private TreeNode selectedTableNode;
+
+        // Tag types
+        // Tables:   Tuple<string, string, string>  ("TABLE",   schema, name)
+        // Views:    Tuple<string, string, string>  ("VIEW",    schema, name)
+        // Procs:    Tuple<string, string, string>  ("PROC",    schema, name)
+        // Funcs:    Tuple<string, string, string>  ("FUNC",    schema, name)
+        // Triggers: Tuple<string, string, string>  ("TRIGGER", schema, name)
+        // Indexes:  Tuple<string, string, string, string> ("INDEX", schema, table, indexName)
 
         public Main(Conexion connection)
         {
             con = connection;
             metadata = new Backend.TableView.Metadata(con);
+            ddl = new Backend.TableView.DDL(con);
 
             InitializeComponent();
             LoadTree();
@@ -198,24 +211,30 @@ namespace Database_Manager_TBD2
 
             Controls.Add(mainSplit);
 
-            // CONTEXT MENUS
+            // ── CONTEXT MENUS ────────────────────────────────────────────
 
+            // Database root menu
             dbMenu = new ContextMenuStrip();
             dbMenu.Items.Add("New Query", null, (s, e) =>
             {
                 txtQueryEditor.Text = "";
                 lblCurrentView.Text = "New Query";
             });
-
             dbMenu.Items.Add("Refresh", null, (s, e) => RefreshTree());
 
+            // Table menu
             tableMenu = new ContextMenuStrip();
-
             tableMenu.Items.Add("View Table", null, (s, e) => OpenTableData());
-
             tableMenu.Items.Add("View DDL", null, (s, e) => ShowDDL());
-
             tableMenu.Items.Add("View Structure", null, (s, e) => ShowStructure());
+
+            // Generic object menu (views, procs, funcs, triggers)
+            objectMenu = new ContextMenuStrip();
+            objectMenu.Items.Add("View DDL", null, (s, e) => ShowDDL());
+
+            // Index menu
+            indexMenu = new ContextMenuStrip();
+            indexMenu.Items.Add("View DDL", null, (s, e) => ShowDDL());
         }
 
         // =========================================================
@@ -226,20 +245,13 @@ namespace Database_Manager_TBD2
             treeDatabase.Nodes.Clear();
 
             TreeNode root = new TreeNode(con.Database);
-
             treeDatabase.Nodes.Add(root);
 
-            TreeNode EmptyNode(string text = "(vacio)")
-            {
-                return new TreeNode(text)
-                {
-                    ForeColor = Color.Gray
-                };
-            }
+            TreeNode EmptyNode(string text = "(vacio)") =>
+                new TreeNode(text) { ForeColor = Color.Gray };
 
-            // TABLES
+            // ── TABLES ───────────────────────────────────────────────────
             TreeNode tablesNode = new TreeNode("Tables");
-
             root.Nodes.Add(tablesNode);
 
             DataTable tables = metadata.GetTables();
@@ -256,9 +268,7 @@ namespace Database_Manager_TBD2
                     string name = r["ObjectName"].ToString();
 
                     TreeNode tableNode = new TreeNode($"{schema}.{name}");
-
-                    tableNode.Tag = new Tuple<string, string>(schema, name);
-
+                    tableNode.Tag = new Tuple<string, string, string>("TABLE", schema, name);
                     tablesNode.Nodes.Add(tableNode);
 
                     DataTable cols = metadata.GetColumns(schema, name);
@@ -270,17 +280,13 @@ namespace Database_Manager_TBD2
                     else
                     {
                         foreach (DataRow c in cols.Rows)
-                        {
-                            tableNode.Nodes.Add(
-                                $"   {c["ColumnName"]} ({c["DataType"]})");
-                        }
+                            tableNode.Nodes.Add($"   {c["ColumnName"]} ({c["DataType"]})");
                     }
                 }
             }
 
-            // VIEWS
+            // ── VIEWS ────────────────────────────────────────────────────
             TreeNode viewsNode = new TreeNode("Views");
-
             root.Nodes.Add(viewsNode);
 
             DataTable views = metadata.GetViews();
@@ -293,14 +299,17 @@ namespace Database_Manager_TBD2
             {
                 foreach (DataRow r in views.Rows)
                 {
-                    viewsNode.Nodes.Add(
-                        $"{r["SchemaName"]}.{r["ObjectName"]}");
+                    string schema = r["SchemaName"].ToString();
+                    string name = r["ObjectName"].ToString();
+
+                    TreeNode node = new TreeNode($"{schema}.{name}");
+                    node.Tag = new Tuple<string, string, string>("VIEW", schema, name);
+                    viewsNode.Nodes.Add(node);
                 }
             }
 
-            // PROCEDURES
+            // ── PROCEDURES ───────────────────────────────────────────────
             TreeNode procNode = new TreeNode("Procedures");
-
             root.Nodes.Add(procNode);
 
             DataTable procs = metadata.GetProcedures();
@@ -313,14 +322,17 @@ namespace Database_Manager_TBD2
             {
                 foreach (DataRow r in procs.Rows)
                 {
-                    procNode.Nodes.Add(
-                        $"{r["SchemaName"]}.{r["ObjectName"]}");
+                    string schema = r["SchemaName"].ToString();
+                    string name = r["ObjectName"].ToString();
+
+                    TreeNode node = new TreeNode($"{schema}.{name}");
+                    node.Tag = new Tuple<string, string, string>("PROC", schema, name);
+                    procNode.Nodes.Add(node);
                 }
             }
 
-            // FUNCTIONS
+            // ── FUNCTIONS ────────────────────────────────────────────────
             TreeNode funcNode = new TreeNode("Functions");
-
             root.Nodes.Add(funcNode);
 
             DataTable funcs = metadata.GetFunctions();
@@ -333,14 +345,17 @@ namespace Database_Manager_TBD2
             {
                 foreach (DataRow r in funcs.Rows)
                 {
-                    funcNode.Nodes.Add(
-                        $"{r["SchemaName"]}.{r["ObjectName"]}");
+                    string schema = r["SchemaName"].ToString();
+                    string name = r["ObjectName"].ToString();
+
+                    TreeNode node = new TreeNode($"{schema}.{name}");
+                    node.Tag = new Tuple<string, string, string>("FUNC", schema, name);
+                    funcNode.Nodes.Add(node);
                 }
             }
 
-            // TRIGGERS
+            // ── TRIGGERS ─────────────────────────────────────────────────
             TreeNode trigNode = new TreeNode("Triggers");
-
             root.Nodes.Add(trigNode);
 
             DataTable trigs = metadata.GetTriggers();
@@ -353,14 +368,17 @@ namespace Database_Manager_TBD2
             {
                 foreach (DataRow r in trigs.Rows)
                 {
-                    trigNode.Nodes.Add(
-                        $"{r["SchemaName"]}.{r["ObjectName"]}");
+                    string schema = r["SchemaName"].ToString();
+                    string name = r["ObjectName"].ToString();
+
+                    TreeNode node = new TreeNode($"{schema}.{name}");
+                    node.Tag = new Tuple<string, string, string>("TRIGGER", schema, name);
+                    trigNode.Nodes.Add(node);
                 }
             }
 
-            // INDEXES
+            // ── INDEXES ──────────────────────────────────────────────────
             TreeNode indexNode = new TreeNode("Indexes");
-
             root.Nodes.Add(indexNode);
 
             DataTable idx = metadata.GetIndexes();
@@ -373,14 +391,18 @@ namespace Database_Manager_TBD2
             {
                 foreach (DataRow r in idx.Rows)
                 {
-                    indexNode.Nodes.Add(
-                        $"{r["SchemaName"]}.{r["TableName"]}.{r["IndexName"]}");
+                    string schema = r["SchemaName"].ToString();
+                    string tableName = r["TableName"].ToString();
+                    string indexName = r["IndexName"].ToString();
+
+                    TreeNode node = new TreeNode($"{schema}.{tableName}.{indexName}");
+                    node.Tag = new Tuple<string, string, string, string>("INDEX", schema, tableName, indexName);
+                    indexNode.Nodes.Add(node);
                 }
             }
 
-            // USERS
+            // ── USERS ────────────────────────────────────────────────────
             TreeNode userNode = new TreeNode("Users");
-
             root.Nodes.Add(userNode);
 
             DataTable users = metadata.GetUsers();
@@ -392,10 +414,7 @@ namespace Database_Manager_TBD2
             else
             {
                 foreach (DataRow r in users.Rows)
-                {
-                    userNode.Nodes.Add(
-                        $"{r["UserName"]} ({r["UserType"]})");
-                }
+                    userNode.Nodes.Add($"{r["UserName"]} ({r["UserType"]})");
             }
 
             root.Expand();
@@ -407,7 +426,6 @@ namespace Database_Manager_TBD2
         private void TreeDatabase_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             selectedTableNode = e.Node;
-
             treeDatabase.SelectedNode = e.Node;
 
             if (e.Node.Parent == null)
@@ -416,16 +434,32 @@ namespace Database_Manager_TBD2
                 return;
             }
 
-            if (e.Node.Tag is Tuple<string, string>)
-                treeDatabase.ContextMenuStrip = tableMenu;
-            else
-                treeDatabase.ContextMenuStrip = null;
+            switch (e.Node.Tag)
+            {
+                case Tuple<string, string, string> t when t.Item1 == "TABLE":
+                    treeDatabase.ContextMenuStrip = tableMenu;
+                    break;
+
+                case Tuple<string, string, string> t
+                    when t.Item1 == "VIEW" || t.Item1 == "PROC"
+                      || t.Item1 == "FUNC" || t.Item1 == "TRIGGER":
+                    treeDatabase.ContextMenuStrip = objectMenu;
+                    break;
+
+                case Tuple<string, string, string, string> _:
+                    treeDatabase.ContextMenuStrip = indexMenu;
+                    break;
+
+                default:
+                    treeDatabase.ContextMenuStrip = null;
+                    break;
+            }
         }
 
         private void TreeDatabase_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            if (e.Node.Tag is Tuple<string, string> t)
-                OpenTableData(t.Item1, t.Item2);
+            if (e.Node.Tag is Tuple<string, string, string> t && t.Item1 == "TABLE")
+                OpenTableData(t.Item2, t.Item3);
         }
 
         // =========================================================
@@ -434,19 +468,13 @@ namespace Database_Manager_TBD2
 
         private void ShowStructure()
         {
-            if (selectedTableNode?.Tag is not Tuple<string, string> t)
+            if (selectedTableNode?.Tag is not Tuple<string, string, string> t || t.Item1 != "TABLE")
                 return;
 
             try
             {
-                string schema = t.Item1;
-                string table = t.Item2;
-
-                DataTable cols = metadata.GetColumns(schema, table);
-
-                lblCurrentView.Text =
-                    $"Structure: [{schema}].[{table}]";
-
+                DataTable cols = metadata.GetColumns(t.Item2, t.Item3);
+                lblCurrentView.Text = $"Structure: [{t.Item2}].[{t.Item3}]";
                 dgvResults.DataSource = cols;
             }
             catch (Exception ex)
@@ -457,22 +485,19 @@ namespace Database_Manager_TBD2
 
         private void OpenTableData()
         {
-            if (selectedTableNode?.Tag is not Tuple<string, string> t)
+            if (selectedTableNode?.Tag is not Tuple<string, string, string> t || t.Item1 != "TABLE")
                 return;
 
-            OpenTableData(t.Item1, t.Item2);
+            OpenTableData(t.Item2, t.Item3);
         }
 
         private void OpenTableData(string schema, string table)
         {
             try
             {
-                lblCurrentView.Text =
-                    $"Table Data: [{schema}].[{table}]";
-
+                lblCurrentView.Text = $"Table Data: [{schema}].[{table}]";
                 dgvResults.DataSource =
-                    con.ExecuteSelect(
-                        $"SELECT TOP 100 * FROM [{schema}].[{table}]");
+                    con.ExecuteSelect($"SELECT TOP 100 * FROM [{schema}].[{table}]");
             }
             catch (Exception ex)
             {
@@ -485,33 +510,70 @@ namespace Database_Manager_TBD2
             try
             {
                 Cursor = Cursors.WaitCursor;
-
                 metadata = new Backend.TableView.Metadata(con);
-
                 LoadTree();
-
                 lblCurrentView.Text = "Database Tree Refreshed";
-
                 Cursor = Cursors.Default;
             }
             catch (Exception ex)
             {
                 Cursor = Cursors.Default;
-
                 MessageBox.Show(ex.Message);
             }
         }
 
         private void ShowDDL()
         {
-            if (selectedTableNode?.Tag is not Tuple<string, string> t)
-                return;
+            if (selectedTableNode?.Tag == null) return;
 
-            txtQueryEditor.Text =
-                $"-- DDL not implemented yet for {t.Item1}.{t.Item2}";
+            try
+            {
+                string ddlText;
+                string label;
 
-            lblCurrentView.Text =
-                $"DDL: [{t.Item1}].[{t.Item2}]";
+                switch (selectedTableNode.Tag)
+                {
+                    case Tuple<string, string, string> t when t.Item1 == "TABLE":
+                        ddlText = ddl.GetTableDDL(t.Item2, t.Item3);
+                        label = $"DDL: [{t.Item2}].[{t.Item3}]";
+                        break;
+
+                    case Tuple<string, string, string> t when t.Item1 == "VIEW":
+                        ddlText = ddl.GetViewDDL(t.Item2, t.Item3);
+                        label = $"DDL: [{t.Item2}].[{t.Item3}]";
+                        break;
+
+                    case Tuple<string, string, string> t when t.Item1 == "PROC":
+                        ddlText = ddl.GetProcedureDDL(t.Item2, t.Item3);
+                        label = $"DDL: [{t.Item2}].[{t.Item3}]";
+                        break;
+
+                    case Tuple<string, string, string> t when t.Item1 == "FUNC":
+                        ddlText = ddl.GetFunctionDDL(t.Item2, t.Item3);
+                        label = $"DDL: [{t.Item2}].[{t.Item3}]";
+                        break;
+
+                    case Tuple<string, string, string> t when t.Item1 == "TRIGGER":
+                        ddlText = ddl.GetTriggerDDL(t.Item2, t.Item3);
+                        label = $"DDL: [{t.Item2}].[{t.Item3}]";
+                        break;
+
+                    case Tuple<string, string, string, string> t: // INDEX
+                        ddlText = ddl.GetIndexDDL(t.Item2, t.Item3, t.Item4);
+                        label = $"DDL: [{t.Item2}].[{t.Item3}].[{t.Item4}]";
+                        break;
+
+                    default:
+                        return;
+                }
+
+                txtQueryEditor.Text = ddlText ?? "-- No DDL found for this object.";
+                lblCurrentView.Text = label;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void BtnExecute_Click(object sender, EventArgs e)
@@ -519,9 +581,7 @@ namespace Database_Manager_TBD2
             try
             {
                 lblCurrentView.Text = "Query Results";
-
-                dgvResults.DataSource =
-                    con.ExecuteSelect(txtQueryEditor.Text);
+                dgvResults.DataSource = con.ExecuteSelect(txtQueryEditor.Text);
             }
             catch (Exception ex)
             {
