@@ -29,7 +29,8 @@ Desarrollar una herramienta administrativa para bases de datos, interactuando di
 - Índices
 - Usuarios
 
-// MS SQL SERVER no tiene soporte para la metadata de Tablespaces y Paquetes.
+MS SQL SERVER no tiene soporte para la metadata de Tablespaces y Paquetes.
+
 ---
 
 ## Alcance del Sistema
