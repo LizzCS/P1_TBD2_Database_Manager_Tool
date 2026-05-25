@@ -38,7 +38,8 @@ namespace Database_Manager_TBD2.Backend
                 $"Database={Database};" +
                 $"User Id={Username};" +
                 $"Password={Password};" +
-                $"TrustServerCertificate=True;";
+                $"TrustServerCertificate=True;" +
+                $"Encrypt=False;";
         }
 
         public void TestConnection()
@@ -53,7 +54,6 @@ namespace Database_Manager_TBD2.Backend
             cn.Open();
         }
 
-        // SELECT queries
         public DataTable ExecuteSelect(string sql, Dictionary<string, object>? parameters = null)
         {
             using var cn = new SqlConnection(BuildConnectionString());

@@ -125,8 +125,6 @@ namespace Database_Manager_TBD2
                 BorderStyle = BorderStyle.FixedSingle
             };
 
-            // SERVER
-
             labelTop += sectionSpacing;
 
             Label lblServer = new Label()
@@ -148,8 +146,6 @@ namespace Database_Manager_TBD2
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle
             };
-
-            // DATABASE
 
             labelTop += sectionSpacing;
 
@@ -173,8 +169,6 @@ namespace Database_Manager_TBD2
                 BorderStyle = BorderStyle.FixedSingle
             };
 
-            // AUTH
-
             labelTop += sectionSpacing;
 
             rbWindowsAuth = new RadioButton()
@@ -196,13 +190,9 @@ namespace Database_Manager_TBD2
                 ForeColor = Color.White
             };
 
-            rbWindowsAuth.CheckedChanged +=
-                AuthChanged;
+            rbWindowsAuth.CheckedChanged += AuthChanged;
 
-            rbSqlAuth.CheckedChanged +=
-                AuthChanged;
-
-            // USERNAME + PASSWORD
+            rbSqlAuth.CheckedChanged += AuthChanged;
 
             labelTop += sectionSpacing;
 
@@ -250,8 +240,6 @@ namespace Database_Manager_TBD2
                 BorderStyle = BorderStyle.FixedSingle,
                 Visible = false
             };
-
-            // BUTTONS
 
             labelTop += 110;
 
@@ -315,13 +303,10 @@ namespace Database_Manager_TBD2
 
             btnConnect.FlatAppearance.BorderSize = 0;
 
-            // EVENTS
 
             btnTest.Click += BtnTest_Click;
             btnSave.Click += BtnSave_Click;
             btnConnect.Click += BtnConnect_Click;
-
-            // ADD CONTROLS
 
             rightPanel.Controls.Add(lblName);
             rightPanel.Controls.Add(txtName);
@@ -348,8 +333,6 @@ namespace Database_Manager_TBD2
 
             rightPanel.Controls.Add(btnSave);
             rightPanel.Controls.Add(btnConnect);
-
-            // FORM
 
             this.Controls.Add(rightPanel);
             this.Controls.Add(leftPanel);
@@ -382,7 +365,6 @@ namespace Database_Manager_TBD2
                 return;
             }
 
-            // Validate SQL Authentication fields
             if (rbSqlAuth.Checked &&
                 (string.IsNullOrWhiteSpace(txtUsername.Text) ||
                  string.IsNullOrWhiteSpace(txtPassword.Text)))
@@ -437,7 +419,6 @@ namespace Database_Manager_TBD2
                 if (con == null)
                     return;
 
-                // Open pgAdmin-style window
                 Main dashboard = new Main(con);
 
                 dashboard.Show();
@@ -451,7 +432,7 @@ namespace Database_Manager_TBD2
         private Conexion BuildConnection()
         {
             SetTestingState();
-            // Validate required fields
+
             if (string.IsNullOrWhiteSpace(txtName.Text) ||
                 string.IsNullOrWhiteSpace(txtServer.Text) ||
                 string.IsNullOrWhiteSpace(txtOriginalDatabase.Text))
@@ -461,7 +442,6 @@ namespace Database_Manager_TBD2
                 return null;
             }
 
-            // Validate SQL Authentication fields
             if (rbSqlAuth.Checked &&
                 (string.IsNullOrWhiteSpace(txtUsername.Text) ||
                  string.IsNullOrWhiteSpace(txtPassword.Text)))
