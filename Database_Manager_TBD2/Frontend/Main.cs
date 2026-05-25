@@ -53,7 +53,6 @@ namespace Database_Manager_TBD2
             ForeColor = Color.White;
             Font = new Font("Segoe UI", 10);
 
-            // MAIN SPLIT
             mainSplit = new SplitContainer()
             {
                 Dock = DockStyle.Fill,
@@ -63,7 +62,6 @@ namespace Database_Manager_TBD2
             mainSplit.Panel1.BackColor = Color.FromArgb(28, 28, 28);
             mainSplit.Panel2.BackColor = Color.FromArgb(18, 18, 18);
 
-            // TREE
             treeDatabase = new TreeView()
             {
                 Dock = DockStyle.Fill,
@@ -77,7 +75,6 @@ namespace Database_Manager_TBD2
 
             mainSplit.Panel1.Controls.Add(treeDatabase);
 
-            // RIGHT SPLIT
             rightSplit = new SplitContainer()
             {
                 Dock = DockStyle.Fill,
@@ -85,13 +82,11 @@ namespace Database_Manager_TBD2
                 SplitterDistance = 320
             };
 
-            // QUERY PANEL
             Panel queryPanel = new Panel()
             {
                 Dock = DockStyle.Fill
             };
 
-            // BUTTON BAR
             FlowLayoutPanel buttonBar = new FlowLayoutPanel()
             {
                 Dock = DockStyle.Top,
@@ -147,8 +142,6 @@ namespace Database_Manager_TBD2
             buttonBar.Controls.Add(btnNewQuery);
             buttonBar.Controls.Add(btnExecute);
             buttonBar.Controls.Add(btnRefresh);
-
-            // EDITOR
             txtQueryEditor = new RichTextBox()
             {
                 Dock = DockStyle.Fill,
@@ -162,7 +155,6 @@ namespace Database_Manager_TBD2
             queryPanel.Controls.Add(txtQueryEditor);
             queryPanel.Controls.Add(buttonBar);
 
-            // CURRENT VIEW LABEL
             lblCurrentView = new Label()
             {
                 Dock = DockStyle.Top,
@@ -174,7 +166,6 @@ namespace Database_Manager_TBD2
                 Padding = new Padding(10, 0, 0, 0)
             };
 
-            // GRID
             dgvResults = new DataGridView()
             {
                 Dock = DockStyle.Fill,
@@ -447,7 +438,6 @@ namespace Database_Manager_TBD2
                 }
             }
 
-            // ── USERS ────────────────────────────────────────────────────
             TreeNode userNode = new TreeNode("Users");
             root.Nodes.Add(userNode);
 
@@ -637,7 +627,10 @@ namespace Database_Manager_TBD2
             try
             {
                 lblCurrentView.Text = "Query Results";
+
                 dgvResults.DataSource = con.ExecuteSelect(txtQueryEditor.Text);
+
+                MessageBox.Show("Query executed successfully.");
             }
             catch (Exception ex)
             {

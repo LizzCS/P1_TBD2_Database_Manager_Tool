@@ -7,7 +7,6 @@ using Database_Manager_TBD2.Backend;
 
 namespace Database_Manager_TBD2
 {
-
     public class CreateTable : Form
     {
         private DataGridView dgvColumns;
@@ -84,7 +83,6 @@ namespace Database_Manager_TBD2
             ForeColor = Color.White;
             Font = new Font("Segoe UI", 9.5f);
 
-            // ── TOP BAR (schema / table name) ──────────────────────
             pnlTop = new Panel
             {
                 Dock = DockStyle.Top,
@@ -161,7 +159,6 @@ namespace Database_Manager_TBD2
                 btnAddRow, btnDeleteRow
             });
 
-            // ── COLUMN GRID ────────────────────────────────────────
             dgvColumns = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -199,7 +196,6 @@ namespace Database_Manager_TBD2
                 ForeColor = Color.LightGray
             };
 
-            // Column Name
             dgvColumns.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "ColName",
@@ -208,7 +204,6 @@ namespace Database_Manager_TBD2
                 SortMode = DataGridViewColumnSortMode.NotSortable
             });
 
-            // Data Type (combo)
             var typeCol = new DataGridViewComboBoxColumn
             {
                 Name = "DataType",
@@ -220,7 +215,6 @@ namespace Database_Manager_TBD2
             typeCol.Items.AddRange(SqlTypes);
             dgvColumns.Columns.Add(typeCol);
 
-            // Length
             dgvColumns.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Length",
@@ -229,7 +223,6 @@ namespace Database_Manager_TBD2
                 SortMode = DataGridViewColumnSortMode.NotSortable
             });
 
-            // Precision
             dgvColumns.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Precision",
@@ -238,7 +231,6 @@ namespace Database_Manager_TBD2
                 SortMode = DataGridViewColumnSortMode.NotSortable
             });
 
-            // Scale
             dgvColumns.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Scale",
@@ -247,7 +239,6 @@ namespace Database_Manager_TBD2
                 SortMode = DataGridViewColumnSortMode.NotSortable
             });
 
-            // Allow Nulls (checkbox)
             dgvColumns.Columns.Add(new DataGridViewCheckBoxColumn
             {
                 Name = "AllowNulls",
@@ -256,7 +247,6 @@ namespace Database_Manager_TBD2
                 SortMode = DataGridViewColumnSortMode.NotSortable
             });
 
-            // PK (checkbox)
             dgvColumns.Columns.Add(new DataGridViewCheckBoxColumn
             {
                 Name = "IsPK",
@@ -274,7 +264,6 @@ namespace Database_Manager_TBD2
             dgvColumns.SelectionChanged += DgvColumns_SelectionChanged;
             dgvColumns.RowPostPaint += DgvColumns_RowPostPaint;
 
-            // ── PROPERTIES PANEL (bottom-left SSMS style) ──────────
             pnlProperties = new Panel
             {
                 Dock = DockStyle.Bottom,
@@ -363,7 +352,6 @@ namespace Database_Manager_TBD2
                 lblIncrement, txtIdentityIncrement
             });
 
-            // ── BOTTOM BUTTON BAR ──────────────────────────────────
             pnlBottom = new Panel
             {
                 Dock = DockStyle.Bottom,
@@ -399,7 +387,6 @@ namespace Database_Manager_TBD2
 
             pnlBottom.Controls.AddRange(new Control[] { btnSave, btnCancel });
 
-            // ── STATUS BAR ────────────────────────────────────────
             statusStrip = new StatusStrip { BackColor = Color.FromArgb(25, 25, 25) };
             lblStatus = new ToolStripStatusLabel
             {
@@ -408,17 +395,12 @@ namespace Database_Manager_TBD2
             };
             statusStrip.Items.Add(lblStatus);
 
-            // ── LAYOUT ────────────────────────────────────────────
             Controls.Add(dgvColumns);
             Controls.Add(pnlProperties);
             Controls.Add(pnlBottom);
             Controls.Add(pnlTop);
             Controls.Add(statusStrip);
         }
-
-        // =========================================================
-        // LOAD EXISTING TABLE
-        // =========================================================
         private void LoadExistingTable()
         {
             try
@@ -438,11 +420,11 @@ namespace Database_Manager_TBD2
                     CASE WHEN pk.column_id IS NOT NULL THEN 1 ELSE 0 END AS IsPK
                     FROM sys.tables tbl
                     INNER JOIN sys.schemas s  
-                        ON tbl.schema_id    = s.schema_id
+                        ON tbl.schema_id = s.schema_id
                     INNER JOIN sys.columns  c  
-                        ON tbl.object_id    = c.object_id
-                    INNER JOIN sys.types    t  
-                        ON c.user_type_id   = t.user_type_id
+                        ON tbl.object_id = c.object_id
+                    INNER JOIN sys.types t  
+                        ON c.user_type_id = t.user_type_id
                     LEFT  JOIN sys.identity_columns ic
                            ON c.object_id = ic.object_id 
                             AND c.column_id = ic.column_id
@@ -452,7 +434,8 @@ namespace Database_Manager_TBD2
                     SELECT ic2.object_id, ic2.column_id
                     FROM sys.index_columns ic2
                     INNER JOIN sys.indexes i2
-                           ON ic2.object_id = i2.object_id AND ic2.index_id = i2.index_id
+                           ON ic2.object_id = i2.object_id 
+                            AND ic2.index_id = i2.index_id
                     WHERE i2.is_primary_key = 1
                 ) pk ON c.object_id = pk.object_id AND c.column_id = pk.column_id
                 WHERE s.name   = '{EscapeSql(originalSchema)}'

@@ -9,7 +9,7 @@ namespace Database_Manager_TBD2
 
     public class CreateView : Form
     {
-        // ── Controls ────────────────────────────────────────────────
+
         private SplitContainer mainSplit;  
         private RichTextBox txtQuery;
         private DataGridView dgvPreview;
@@ -26,15 +26,12 @@ namespace Database_Manager_TBD2
         private StatusStrip statusStrip;
         private ToolStripStatusLabel lblStatus;
 
-        // ── State ────────────────────────────────────────────────────
         private readonly Conexion con;
         private readonly string originalSchema;
         private readonly string originalView;
         private readonly bool isEdit;
 
-        public CreateView(Conexion connection,
-                                string schema = null,
-                                string viewName = null)
+        public CreateView(Conexion connection, string schema = null, string viewName = null)
         {
             con = connection;
             originalSchema = schema;
@@ -49,9 +46,6 @@ namespace Database_Manager_TBD2
                 txtQuery.Text = BuildTemplate();
         }
 
-        // =========================================================
-        // UI BUILD
-        // =========================================================
         private void InitializeComponent()
         {
             Text = isEdit ? $"View Designer — [{originalSchema}].[{originalView}]": "New View Designer";
@@ -63,7 +57,6 @@ namespace Database_Manager_TBD2
             ForeColor = Color.White;
             Font = new Font("Segoe UI", 9.5f);
 
-            // ── TOP TOOLBAR ────────────────────────────────────────
             pnlTop = new Panel
             {
                 Dock = DockStyle.Top,
@@ -126,7 +119,6 @@ namespace Database_Manager_TBD2
                 lblSchema, txtSchema, lblViewName, txtViewName, btnPreview
             });
 
-            // ── SPLIT (query editor | preview grid) ───────────────
             mainSplit = new SplitContainer
             {
                 Dock = DockStyle.Fill,
@@ -135,7 +127,6 @@ namespace Database_Manager_TBD2
                 BackColor = Color.FromArgb(18, 18, 18)
             };
 
-            // Query editor
             txtQuery = new RichTextBox
             {
                 Dock = DockStyle.Fill,
@@ -149,7 +140,6 @@ namespace Database_Manager_TBD2
             mainSplit.Panel1.Controls.Add(txtQuery);
             mainSplit.Panel1.BackColor = Color.FromArgb(30, 30, 30);
 
-            // Preview area
             lblPreviewStatus = new Label
             {
                 Dock = DockStyle.Top,
@@ -190,7 +180,6 @@ namespace Database_Manager_TBD2
             mainSplit.Panel2.Controls.Add(lblPreviewStatus);
             mainSplit.Panel2.BackColor = Color.FromArgb(28, 28, 28);
 
-            // ── BOTTOM BUTTONS ─────────────────────────────────────
             pnlBottom = new Panel
             {
                 Dock = DockStyle.Bottom,
@@ -226,7 +215,6 @@ namespace Database_Manager_TBD2
 
             pnlBottom.Controls.AddRange(new Control[] { btnSave, btnCancel });
 
-            // ── STATUS BAR ────────────────────────────────────────
             statusStrip = new StatusStrip { BackColor = Color.FromArgb(25, 25, 25) };
             lblStatus = new ToolStripStatusLabel
             {
@@ -235,24 +223,20 @@ namespace Database_Manager_TBD2
             };
             statusStrip.Items.Add(lblStatus);
 
-            // ── LAYOUT ────────────────────────────────────────────
             Controls.Add(mainSplit);
             Controls.Add(pnlBottom);
             Controls.Add(pnlTop);
             Controls.Add(statusStrip);
         }
 
-        // =========================================================
-        // LOAD EXISTING VIEW
-        // =========================================================
         private void LoadExistingView()
         {
             try
             {
                 string sql = $@"
-SELECT OBJECT_DEFINITION(OBJECT_ID(
-    QUOTENAME('{EscapeSql(originalSchema)}') + '.' + QUOTENAME('{EscapeSql(originalView)}')
-)) AS Definition";
+                SELECT OBJECT_DEFINITION(OBJECT_ID(
+                    QUOTENAME('{EscapeSql(originalSchema)}') + '.' + QUOTENAME('{EscapeSql(originalView)}')
+                )) AS Definition";
 
                 DataTable dt = con.ExecuteSelect(sql);
                 string def = dt.Rows.Count > 0 ? dt.Rows[0]["Definition"]?.ToString() : null;
@@ -269,9 +253,6 @@ SELECT OBJECT_DEFINITION(OBJECT_ID(
             }
         }
 
-        // =========================================================
-        // F5 SHORTCUT
-        // =========================================================
         private void TxtQuery_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F5)
@@ -281,9 +262,6 @@ SELECT OBJECT_DEFINITION(OBJECT_ID(
             }
         }
 
-        // =========================================================
-        // PREVIEW — run the SELECT part only
-        // =========================================================
         private void BtnPreview_Click(object sender, EventArgs e)
         {
             string selectSql = ExtractSelectForPreview(txtQuery.Text);
@@ -313,9 +291,6 @@ SELECT OBJECT_DEFINITION(OBJECT_ID(
             }
         }
 
-        // =========================================================
-        // SAVE
-        // =========================================================
         private void BtnSave_Click(object sender, EventArgs e)
         {
             string schema = txtSchema.Text.Trim();

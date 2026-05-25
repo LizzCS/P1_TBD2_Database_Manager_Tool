@@ -79,7 +79,6 @@ namespace Database_Manager_TBD2.Backend
             return dt;
         }
 
-        // INSERT, UPDATE, DELETE
         public int ExecuteNonQuery(string sql, Dictionary <string, object>? parameters = null)
         {
             using var cn = new SqlConnection(BuildConnectionString());

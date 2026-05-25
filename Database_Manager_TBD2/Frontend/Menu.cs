@@ -103,11 +103,9 @@ namespace Database_Manager_TBD2
             int textboxOffset = 28;
             int sectionSpacing = 80;
 
-            // CONNECTION NAME
-
             Label lblName = new Label()
             {
-                Text = "Connection Name",
+                Text = "Nombre de Conexion",
                 Top = labelTop,
                 Left = left,
                 Width = 250,
@@ -129,7 +127,7 @@ namespace Database_Manager_TBD2
 
             Label lblServer = new Label()
             {
-                Text = "Server",
+                Text = "Servidor",
                 Top = labelTop,
                 Left = left,
                 Width = 250,
@@ -151,7 +149,7 @@ namespace Database_Manager_TBD2
 
             Label lblOriginal = new Label()
             {
-                Text = "Database",
+                Text = "Base de Datos",
                 Top = labelTop,
                 Left = left,
                 Width = 250,
@@ -173,7 +171,7 @@ namespace Database_Manager_TBD2
 
             rbWindowsAuth = new RadioButton()
             {
-                Text = "Windows Authentication",
+                Text = "Autenticación de Windows",
                 Top = labelTop,
                 Left = left,
                 Width = 220,
@@ -183,7 +181,7 @@ namespace Database_Manager_TBD2
 
             rbSqlAuth = new RadioButton()
             {
-                Text = "SQL Authentication",
+                Text = "Autenticación SQL",
                 Top = labelTop,
                 Left = 280,
                 Width = 220,
@@ -198,7 +196,7 @@ namespace Database_Manager_TBD2
 
             lblUsername = new Label()
             {
-                Text = "Username",
+                Text = "ID Usuario",
                 Top = labelTop,
                 Left = left,
                 Width = 200,
@@ -220,7 +218,7 @@ namespace Database_Manager_TBD2
 
             lblPassword = new Label()
             {
-                Text = "Password",
+                Text = "Contraseña",
                 Top = labelTop,
                 Left = 300,
                 Width = 200,
@@ -248,7 +246,7 @@ namespace Database_Manager_TBD2
                 Text = "Probar Conexion",
                 Top = labelTop,
                 Left = left,
-                Width = 170,
+                Width = 150,
                 Height = 45,
                 BackColor = Color.FromArgb(45, 45, 45),
                 ForeColor = Color.White,
@@ -280,7 +278,7 @@ namespace Database_Manager_TBD2
                 Text = "Guardar",
                 Top = labelTop,
                 Left = 210,
-                Width = 140,
+                Width = 150,
                 Height = 45,
                 BackColor = Color.FromArgb(45, 45, 45),
                 ForeColor = Color.White,
@@ -438,7 +436,7 @@ namespace Database_Manager_TBD2
                 string.IsNullOrWhiteSpace(txtOriginalDatabase.Text))
             {
                 SetErrorState();
-                MessageBox.Show("Name, Server, and Database are required.");
+                MessageBox.Show("Nombre, Servidor, y Base de Datos son requeridos.");
                 return null;
             }
 
@@ -447,7 +445,7 @@ namespace Database_Manager_TBD2
                  string.IsNullOrWhiteSpace(txtPassword.Text)))
             {
                 SetErrorState();
-                MessageBox.Show("Username and Password are required for SQL Authentication.");
+                MessageBox.Show("Nombre de usuario y contraseña son requeridos para la autenticación SQL.");
                 return null;
             }
 
@@ -484,25 +482,25 @@ namespace Database_Manager_TBD2
         private void SetTestingState()
         {
             pnlStatus.BackColor = Color.Goldenrod;
-            lblStatus.Text = "Testing...";
+            lblStatus.Text = "Probando...";
         }
 
         private void SetSuccessState()
         {
             pnlStatus.BackColor = Color.LimeGreen;
-            lblStatus.Text = "Connected";
+            lblStatus.Text = "Conectado";
         }
 
         private void SetErrorState()
         {
             pnlStatus.BackColor = Color.Red;
-            lblStatus.Text = "Failed";
+            lblStatus.Text = "Error";
         }
 
         private void SetIdleState()
         {
             pnlStatus.BackColor = Color.Gray;
-            lblStatus.Text = "Idle";
+            lblStatus.Text = "Inactivo";
         }
 
         private void LoadConnections()
